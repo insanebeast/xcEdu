@@ -1,63 +1,91 @@
+
 <template>
   <div>
-    <el-button type="primary" size="small" @click="query">查询</el-button>
-    <el-table
-      :data="list"
-      stripe
-      style="width: 100%">
-      <el-table-column
-        prop="date"
-        label="日期"
-        width="180">
-      </el-table-column>
-      <el-table-column
-        prop="name"
-        label="姓名"
-        width="180">
-      </el-table-column>
-      <el-table-column
-        prop="address"
-        label="地址">
-      </el-table-column>
-    </el-table>
+    <el-form :inline="true" :model="params" class="demo-form-inline">
+      <el-form-item label="页面名称">
+        <el-input v-model="params.pageAliase" placeholder="请输入页面名称"></el-input>
+      </el-form-item>
+      <el-form-item label="所属站点">
+        <el-select v-model="params.siteId" placeholder="请选择所属站点">
+          <el-option
+            v-for="item in siteList"
+            :key="item.siteId"
+            :label="item.siteName"
+            :value="item.siteId">
+          </el-option>
+        </el-select>
+      </el-form-item>
+      <el-form-item>
+        <el-button type="primary" @click="query">查询</el-button>
+      </el-form-item>
+    </el-form>
+
+     <el-table
+    :data="list"
+    stripe
+    style="width: 100%">
+        <el-table-column type="index" width="60">
+        </el-table-column>
+        <el-table-column prop="pageName" label="页面名称" width="120">
+        </el-table-column>
+        <el-table-column prop="pageAliase" label="别名" width="120">
+        </el-table-column>
+        <el-table-column prop="pageType" label="页面类型" width="150">
+        </el-table-column>
+        <el-table-column prop="pageWebPath" label="访问路径" width="250">
+        </el-table-column>
+        <el-table-column prop="pagePhysicalPath" label="物理路径" width="300">
+        </el-table-column>
+        <el-table-column prop="pageCreateTime" label="创建时间" width="250" >
+        </el-table-column>
+      </el-table>
     <el-pagination
       layout="prev, pager, next"
       style="float: right;"
       :total="total"
+      :current-page="params.page"
       @current-change="changePage">
     </el-pagination>
   </div>
 </template>
 <script>
+  import * as cmsApi from '../api/cms'
+
   export default {
+    mounted(){
+      this.query()
+    },
     data() {
       return {
-        list: [{
-          date: '2016-05-02',
-          name: '邹文景',
-          address: '上海市普陀区金沙江路 1518 弄'
-        }, {
-          date: '2016-05-04',
-          name: '王小虎',
-          address: '上海市普陀区金沙江路 1517 弄'
-        }, {
-          date: '2016-05-01',
-          name: '王小虎',
-          address: '上海市普陀区金沙江路 1519 弄'
-        }, {
-          date: '2016-05-03',
-          name: '王小虎',
-          address: '上海市普陀区金沙江路 1516 弄'
+        siteList:[{
+          siteId:'5a751fab6abb5044e0d19ea1',
+          siteName:'门户主站'
+        },{
+          siteId:'test',
+          siteName:'测试站点'
         }],
-        total:50
+        list: [],
+        total:50,
+        params:{
+          page:1,
+          size:10,
+          pageAliase:'',
+          siteId:''
+        }
       }
     },
     methods:{
-      changePage:function () {
+      changePage:function (page) {
+        this.params.page = page
         this.query();
       },
       query:function () {
-        alert("查询");
+        cmsApi.page_list(this.params.page,this.params.size,this.params).then((res)=>{
+          console.log(this.params)
+          console.log(res)
+          this.total = res.queryResult.total
+          this.list = res.queryResult.list
+        })
       }
     }
   }
